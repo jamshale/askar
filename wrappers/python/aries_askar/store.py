@@ -1,6 +1,7 @@
 """Handling of Store instances."""
 
 import json
+from typing import Optional, Sequence, Union
 
 from cached_property import cached_property
 
