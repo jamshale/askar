@@ -1,3 +1,3 @@
 """aries_askar library wrapper version."""
 
-__version__ = "0.3.3b4"
+__version__ = "0.3.3b5"

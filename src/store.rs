@@ -113,7 +113,8 @@ impl Store {
         let target = target_url
             .provision_backend(key_method, pass_key, Some(default_profile), recreate)
             .await?;
-        copy_profile(&self.0, &target, &tenant_profile, &tenant_profile).await?;
+        println!("Copying tenant profile: {}", tenant_profile);
+        // copy_profile(&self.0, &target, &tenant_profile, &tenant_profile).await?;
         Ok(Self::new(target))
     }
 
