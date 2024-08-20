@@ -107,7 +107,7 @@ impl Store {
         key_method: StoreKeyMethod,
         pass_key: PassKey<'_>,
         recreate: bool,
-        tenant_profile: &String
+        tenant_profile: String,
     ) -> Result<Self, Error> {
         let target = target_url
             .provision_backend(key_method, pass_key, Some(tenant_profile.clone()), recreate)
