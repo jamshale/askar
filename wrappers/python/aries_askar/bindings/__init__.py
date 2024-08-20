@@ -7,26 +7,29 @@ from ctypes import POINTER, byref, c_int8, c_int32, c_int64
 from typing import Optional, Sequence, Union
 
 from ..types import EntryOperation, KeyAlg, KeyBackend, SeedMethod
-from .handle import (
-    EntryListHandle,
-    KeyEntryListHandle,
-    LocalKeyHandle,
-    ScanHandle,
-    SessionHandle,
-    StoreHandle,
-    StringListHandle,
-)
-from .lib import (
-    AeadParams,
-    ByteBuffer,
-    Encrypted,
-    FfiByteBuffer,
-    FfiJson,
-    FfiStr,
-    FfiTagsJson,
-    Lib,
-    StrBuffer,
-)
+from .handle import (EntryListHandle, KeyEntryListHandle, LocalKeyHandle,
+                     ScanHandle, SessionHandle, StoreHandle, StringListHandle)
+from .lib import (AeadParams, ByteBuffer, Encrypted, FfiByteBuffer, FfiJson,
+                  FfiStr, FfiTagsJson, Lib, StrBuffer)
+
+LIB = Lib()
+LOGGER = logging.getLogger(__name__)
+MODULE_NAME = __name__.split(".")[0]
+
+
+def get_library(init: bool = True) -> Lib:
+    """Return the library instance, loading it if necessary."""
+    global LIB
+    if LIB and init:
+        # preload library - required to create handle instances
+        LIB.loaded
+    return LIB
+
+
+def set_max_log_level(level: Union[str, int, None]):
+    """Set the maximum logging level."""
+    get_library().set_max_log_level(level)
+
 
 def invoke(name, argtypes, *args):
     """Perform a synchronous library function call."""
@@ -229,7 +232,7 @@ async def tenant_copy(
 ) -> StoreHandle:
     """Copy the Store contents to a new location."""
     return await invoke_async(
-        "askar_store_copy",
+        "askar_tenant_copy",
         (StoreHandle, FfiStr, FfiStr, FfiStr, c_int8),
         handle,
         target_uri,
