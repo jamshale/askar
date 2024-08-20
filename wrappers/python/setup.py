@@ -5,7 +5,7 @@ import os
 from setuptools import find_packages, setup
 
 PACKAGE_NAME = "aries_askar_jamshale"
-VERSION = "0.3.3b3"
+VERSION = "0.3.3b4"
 
 with open(os.path.abspath("./README.md"), "r") as fh:
     long_description = fh.read()

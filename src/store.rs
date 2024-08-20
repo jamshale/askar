@@ -109,8 +109,9 @@ impl Store {
         recreate: bool,
         tenant_profile: String,
     ) -> Result<Self, Error> {
+        let default_profile = self.get_default_profile().await?;
         let target = target_url
-            .provision_backend(key_method, pass_key, Some(tenant_profile.clone()), recreate)
+            .provision_backend(key_method, pass_key, Some(default_profile), recreate)
             .await?;
         copy_profile(&self.0, &target, &tenant_profile, &tenant_profile).await?;
         Ok(Self::new(target))
