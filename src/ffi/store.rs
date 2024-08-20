@@ -501,6 +501,46 @@ pub extern "C" fn askar_store_copy(
 }
 
 #[no_mangle]
+pub extern "C" fn askar_tenant_copy(
+    handle: StoreHandle,
+    target_uri: FfiStr<'_>,
+    key_method: FfiStr<'_>,
+    pass_key: FfiStr<'_>,
+    recreate: i8,
+    tenant_profile: FfiStr<'_>,
+    cb: Option<extern "C" fn(cb_id: CallbackId, err: ErrorCode, handle: StoreHandle)>,
+    cb_id: CallbackId,
+) -> ErrorCode {
+    catch_err! {
+        trace!("Copy tenant");
+        let cb = cb.ok_or_else(|| err_msg!("No callback provided"))?;
+        let target_uri = target_uri.into_opt_string().ok_or_else(|| err_msg!("No target URI provided"))?;
+        let key_method = match key_method.as_opt_str() {
+            Some(method) => StoreKeyMethod::parse_uri(method)?,
+            None => StoreKeyMethod::default()
+        };
+        let pass_key = PassKey::from(pass_key.as_opt_str()).into_owned();
+        let cb = EnsureCallback::new(move |result|
+            match result {
+                Ok(handle) => cb(cb_id, ErrorCode::Success, handle),
+                Err(err) => cb(cb_id, set_last_error(Some(err)), StoreHandle::invalid()),
+            }
+        );
+        let tenant_profile = String::from(tenant_profile).to_string();
+        spawn_ok(async move {
+            let result = async move {
+                let store = handle.load().await?;
+                let copied = store.copy_tenant(target_uri.as_str(), key_method, pass_key.as_ref(), recreate != 0, tenant_profile).await?;
+                debug!("Copied tenant {}", handle);
+                Ok(StoreHandle::create(copied).await)
+            }.await;
+            cb.resolve(result);
+        });
+        Ok(ErrorCode::Success)
+    }
+}
+
+#[no_mangle]
 pub extern "C" fn askar_store_close(
     handle: StoreHandle,
     cb: Option<extern "C" fn(cb_id: CallbackId, err: ErrorCode)>,
