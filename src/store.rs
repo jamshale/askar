@@ -100,6 +100,22 @@ impl Store {
         Ok(Self::new(target))
     }
 
+    /// Copy to a new store instance using a database URL
+    pub async fn copy_tenant(
+        &self,
+        target_url: &str,
+        key_method: StoreKeyMethod,
+        pass_key: PassKey<'_>,
+        recreate: bool,
+        tenant_profile: &String
+    ) -> Result<Self, Error> {
+        let target = target_url
+            .provision_backend(key_method, pass_key, Some(tenant_profile.clone()), recreate)
+            .await?;
+        copy_profile(&self.0, &target, &tenant_profile, &tenant_profile).await?;
+        Ok(Self::new(target))
+    }
+
     /// Create a new profile with the given profile name
     pub async fn create_profile(&self, name: Option<String>) -> Result<String, Error> {
         Ok(self.0.create_profile(name).await?)
